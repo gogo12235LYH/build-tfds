@@ -50,6 +50,8 @@ def _get_example_objects(annon_filepath):
             yield {
                 "id":
                     _DPCB_LABELS[label],
+                "label":
+                    label,
                 "bbox":
                     tfds.features.BBox(ymin / height,
                                        xmin / width,
@@ -80,6 +82,7 @@ class DpcbDb(tfds.core.GeneratorBasedBuilder):
                 "objects":
                     tfds.features.Sequence({
                         "id": tf.int64,
+                        "label": tfds.features.ClassLabel(names=_DPCB_LABELS.keys()),
                         "bbox": tfds.features.BBoxFeature()
                     }),
             }),
@@ -117,17 +120,15 @@ class DpcbDb(tfds.core.GeneratorBasedBuilder):
         image_filepath = os.path.join(
             data_path,
             os.path.normpath("DeepPCB_voc/JPEGImages/{}.jpg".format(image_id)))
+
         annon_filepath = os.path.join(
             data_path,
             os.path.normpath("DeepPCB_voc/Annotations/{}.xml".format(image_id)))
 
         objects = list(_get_example_objects(annon_filepath))
-        # Use set() to remove duplicates
-        # labels = sorted(set(obj["label"] for obj in objects))
 
         return {
             "image": image_filepath,
             "image/filename": image_id + ".jpg",
             "objects": objects,
-            # "labels": labels,
         }
