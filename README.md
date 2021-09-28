@@ -76,6 +76,8 @@ def _get_example_objects(annon_filepath):
             yield {
                 "id":
                     _DPCB_LABELS[label],
+                "label":
+                    label,
                 "bbox":
                     tfds.features.BBox(ymin / height,
                                        xmin / width,
@@ -109,6 +111,7 @@ class DpcbDb(tfds.core.GeneratorBasedBuilder):
                 "objects":
                     tfds.features.Sequence({
                         "id": tf.int64,
+                        "label": tfds.features.ClassLabel(names=_DPCB_LABELS.keys()),
                         "bbox": tfds.features.BBoxFeature()
                     }),
             }),
