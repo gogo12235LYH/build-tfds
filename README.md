@@ -4,15 +4,15 @@ _建立自訂 tensorflow-dataset 提高訓練過程資料傳遞效率及解決�
 
 ## 目錄
 
-1. [介紹](#1-介紹)
+1. [初始化](#1-初始化)
 2. [建立](#2-建立)
 3. [其他](#3-其他)
 
-## 1. 介紹
+## 1. 初始化
 
-在此章節裡將介紹使用 tfds 進行初始化及建立自己的資料集型態。
-
-以下由 Deep PCB 資料集作為範例，透過下面指令的初始化，會自動生成資料夾及檔案。
+以下由 Deep PCB 資料集作為範例(此資料集已預先轉換為 VOC 存放格式，
+[DOWNLOAD](https://drive.google.com/file/d/1FxmlSW0A2QfYYfwMZer7aXOMBd_m6O7j/view?usp=sharing))
+，透過下面指令的初始化，會自動生成資料夾及檔案。
 [可參考這裡](https://www.tensorflow.org/datasets/cli#tfds_new_implementing_a_new_dataset)
 
 ```
@@ -38,6 +38,15 @@ tfds new dpcb_db
 ## 2. 建立
 
 本範例僅需修改 dpcb_db.py，在舊有形式上採用 PASCAL VOC 的編排方式進行訓練，老大提供原始碼我們就參考一下， [這裡](https://github.com/tensorflow/datasets/blob/master/tensorflow_datasets/object_detection/voc.py) 。
+
+:point_right: 需要 import 的有 :
+
+```python
+import os
+import xml.etree.ElementTree
+import tensorflow as tf
+import tensorflow_datasets as tfds
+```
 
 :point_right: 所有標記檔案都為 .xml 形式，以下是解析關鍵字及抽取資料集輸出形式。
 
@@ -107,21 +116,35 @@ class DpcbDb(tfds.core.GeneratorBasedBuilder):
         )
 ```
 
+:point_right: 比較重要的是在切割資料集種類(訓練集 或 測試集)，我們是離線的轉換僅需改路徑即可。
 
-確認好資料集標註檔的解析及輸出後，就能進行建立。
+```python
+    def _split_generators(self, dl_manager: tfds.download.DownloadManager):
+        """Returns SplitGenerators."""
+
+        paths = "D:\\"
+
+        return [
+            tfds.core.SplitGenerator(
+                name=tfds.Split.TEST,
+                gen_kwargs=dict(data_path=paths, set_name="test")),
+            tfds.core.SplitGenerator(
+                name=tfds.Split.TRAIN,
+                gen_kwargs=dict(data_path=paths, set_name="trainval")),
+        ]
+```
+
+:point_right: 確認好資料集標註檔的解析及輸出後，就能開始建立。 --data_dir 為輸出路徑。
 
 ```
 tfds build dpcb_db.py --data_dir ./
 ```
 
-```commandline
-INFO[build.py]: Loading dataset dpcb_db.py from path: D:\database\dpcb_db\dpcb_db.py
+```
+INFO[build.py]: Loading dataset dpcb_db.py from path: D:\build-tfds\dpcb_db\dpcb_db.py
+INFO[dataset_info.py]: Load dataset info from .\dpcb_db\1.0.0
 INFO[build.py]: download_and_prepare for dataset dpcb_db/1.0.0...
-INFO[dataset_builder.py]: Generating dataset dpcb_db (.\dpcb_db\1.0.0)
-Downloading and preparing dataset Unknown size (download: Unknown size, generated: Unknown size, total: Unknown size) to .\dpcb_db\1.0.0...
-INFO[tfrecords_writer.py]: Done writing dpcb_db-test.tfrecord. Number of examples: 499 (shards: [499])
-INFO[tfrecords_writer.py]: Done writing dpcb_db-train.tfrecord. Number of examples: 1000 (shards: [1000])
-Dataset dpcb_db downloaded and prepared to .\dpcb_db\1.0.0. Subsequent calls will reuse this data.
+INFO[dataset_builder.py]: Reusing dataset dpcb_db (.\dpcb_db\1.0.0)
 INFO[build.py]: Dataset generation complete...
 
 tfds.core.DatasetInfo(
@@ -136,16 +159,17 @@ tfds.core.DatasetInfo(
     homepage='https://www.tensorflow.org/datasets/catalog/dpcb_db',
     data_path='.\\dpcb_db\\1.0.0',
     download_size=Unknown size,
-    dataset_size=78.16 MiB,
+    dataset_size=78.20 MiB,
     features=FeaturesDict({
         'image': Image(shape=(None, None, 3), dtype=tf.uint8),
         'image/filename': Text(shape=(), dtype=tf.string),
         'objects': Sequence({
             'bbox': BBoxFeature(shape=(4,), dtype=tf.float32),
             'id': tf.int64,
+            'label': ClassLabel(shape=(), dtype=tf.int64, num_classes=6),
         }),
     }),
-    supervised_keys=('image', 'label'),
+    supervised_keys=None,
     disable_shuffling=False,
     splits={
         'test': <SplitInfo num_examples=499, num_shards=1>,
@@ -153,7 +177,6 @@ tfds.core.DatasetInfo(
     },
     citation="""""",
 )
-
 ```
 
 ## 3. 其他
