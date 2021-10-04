@@ -182,6 +182,16 @@ tfds.core.DatasetInfo(
 )
 ```
 
-## 3. 其他
+## 3. 讀取
+
+### tfds.load
+
+注意 data_dir 位置選擇，若沒有設置會導向 C:\使用者\tensorflow_datasets\。
+
+```python
+import tensorflow_datasets as tfds
+
+train, test = tfds.load(name="dpcb_db", split=["train", "test"], data_dir="D:\\tensorflow_datasets")
+```
 
 這裡未來會放上問題及修正。
