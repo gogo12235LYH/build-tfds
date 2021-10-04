@@ -53,19 +53,19 @@ def _get_example_objects(annon_filepath):
                 "label":
                     label,
                 "bbox":
-                    tfds.features.BBox(ymin / height,
-                                       xmin / width,
-                                       ymax / height,
-                                       xmax / width),
+                    tfds.features.BBox(xmin / width,
+                                       ymin / height,
+                                       xmax / width,
+                                       ymax / height),
             }
 
 
 class DpcbDb(tfds.core.GeneratorBasedBuilder):
     """DatasetBuilder for dpcb_db dataset."""
 
-    VERSION = tfds.core.Version('1.0.0')
+    VERSION = tfds.core.Version('1.0.1')
     RELEASE_NOTES = {
-        '1.0.0': 'Initial release.',
+        '1.0.1': 'Initial release.',
     }
 
     def _info(self) -> tfds.core.DatasetInfo:
