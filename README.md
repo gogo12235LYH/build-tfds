@@ -49,6 +49,7 @@ import tensorflow_datasets as tfds
 ```
 
 :point_right: 所有標記檔案都為 .xml 形式，以下是解析關鍵字及抽取資料集輸出形式。
+注意，bbox 座標要求為 0~1，這裡直接將座標 x 與 y 分別除以 影像的寬與長。
 
 ```python
 def _get_example_objects(annon_filepath):
@@ -79,10 +80,10 @@ def _get_example_objects(annon_filepath):
                 "label":
                     label,
                 "bbox":
-                    tfds.features.BBox(ymin / height,
-                                       xmin / width,
-                                       ymax / height,
-                                       xmax / width),
+                    tfds.features.BBox(xmin / width,
+                                       ymin / height,
+                                       xmax / width,
+                                       ymax / height),
             }
 ```
 
@@ -137,7 +138,8 @@ class DpcbDb(tfds.core.GeneratorBasedBuilder):
         ]
 ```
 
-:point_right: 確認好資料集標註檔的解析及輸出後，就能開始建立。 --data_dir 為輸出路徑。
+:point_right: 確認好資料集標註檔的解析及輸出後，就能開始建立。 --data_dir 為輸出路徑
+(預設為 C:\user\tensorflow_datasets\)。
 
 ```
 tfds build dpcb_db.py --data_dir ./
@@ -182,16 +184,14 @@ tfds.core.DatasetInfo(
 )
 ```
 
-## 3. 讀取
+## 3. 其他
 
-### tfds.load
+### 如何讀取 ? tfds.load
 
 注意 data_dir 位置選擇，若沒有設置會導向 C:\使用者\tensorflow_datasets\。
 
 ```python
 import tensorflow_datasets as tfds
 
-train, test = tfds.load(name="dpcb_db", split=["train", "test"], data_dir="D:\\tensorflow_datasets")
+train, test = tfds.load(name="dpcb_db", split=["trainval", "test"], data_dir="D:\\tensorflow_datasets")
 ```
-
-這裡未來會放上問題及修正。
