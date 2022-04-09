@@ -2,6 +2,13 @@
 
 _建立自訂 tensorflow-dataset 提高訓練過程資料傳遞效率及解決多卡訓練問題。(適用 Tensorflow 2.6.0)_
 
+
+---
+
+## Updates
+1. 2022-04-09 -> 新增 VOC 轉 tfrecord.
+---
+
 ## 目錄
 
 1. [初始化](#1-初始化)
