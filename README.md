@@ -22,6 +22,9 @@ _建立自訂 tensorflow-dataset 提高訓練過程資料傳遞效率及解決�
 ，透過下面指令的初始化，會自動生成資料夾及檔案。
 [可參考這裡](https://www.tensorflow.org/datasets/cli#tfds_new_implementing_a_new_dataset)
 
+
+### Deep PCB 資料集 (VOC Like) >>>> [Download](https://drive.google.com/file/d/12MTL3seeA4ZqnVzw1oWwdmE5KGxyAcqC/view?usp=sharing)
+
 ```
 tfds new dpcb_db
 ```
@@ -77,10 +80,10 @@ def _get_example_objects(annon_filepath):
 
             bndbox = obj.find("bndbox")
 
-            xmax = float(bndbox.find("xmax").text)
-            xmin = float(bndbox.find("xmin").text)
-            ymax = float(bndbox.find("ymax").text)
-            ymin = float(bndbox.find("ymin").text)
+            xmax = float(bndbox.find("xmax").text) - 1
+            xmin = float(bndbox.find("xmin").text) - 1
+            ymax = float(bndbox.find("ymax").text) - 1
+            ymin = float(bndbox.find("ymin").text) - 1
             yield {
                 "id":
                     _DPCB_LABELS[label],
@@ -100,9 +103,9 @@ def _get_example_objects(annon_filepath):
 class DpcbDb(tfds.core.GeneratorBasedBuilder):
     """DatasetBuilder for dpcb_db dataset."""
 
-    VERSION = tfds.core.Version('1.0.0')
+    VERSION = tfds.core.Version('1.0.1')
     RELEASE_NOTES = {
-        '1.0.0': 'Initial release.',
+        '1.0.1': 'Initial release.',
     }
 
     def _info(self) -> tfds.core.DatasetInfo:
@@ -133,7 +136,7 @@ class DpcbDb(tfds.core.GeneratorBasedBuilder):
     def _split_generators(self, dl_manager: tfds.download.DownloadManager):
         """Returns SplitGenerators."""
 
-        paths = "D:\\"
+        paths = "D:\\"  # < -- 修改路徑
 
         return [
             tfds.core.SplitGenerator(

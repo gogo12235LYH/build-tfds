@@ -43,10 +43,10 @@ def _get_example_objects(annon_filepath):
 
             bndbox = obj.find("bndbox")
 
-            xmax = float(bndbox.find("xmax").text)
-            xmin = float(bndbox.find("xmin").text)
-            ymax = float(bndbox.find("ymax").text)
-            ymin = float(bndbox.find("ymin").text)
+            xmax = float(bndbox.find("xmax").text) - 1
+            xmin = float(bndbox.find("xmin").text) - 1
+            ymax = float(bndbox.find("ymax").text) - 1
+            ymin = float(bndbox.find("ymin").text) - 1
             yield {
                 "id":
                     _DPCB_LABELS[label],
