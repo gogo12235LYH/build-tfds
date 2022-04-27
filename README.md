@@ -1,4 +1,4 @@
-# Building Tensorflow Datasets (tfds)
+# Tensorflow Datasets (tfds)
 
 _建立自訂 tensorflow-dataset 提高訓練過程資料傳遞效率及解決多卡訓練問題。(適用 Tensorflow 2.6.0)_
 
@@ -6,14 +6,18 @@ _建立自訂 tensorflow-dataset 提高訓練過程資料傳遞效率及解決�
 ---
 
 ## Updates
-1. 2022-04-09 -> 新增 VOC 轉 tfrecord.
+
+* 2022-04-28 -> 新增 VOC_mini
+* 2022-04-09 -> 新增 VOC 轉 tfrecord.
+
 ---
 
 ## 目錄
 
 1. [初始化](#1-初始化)
 2. [建立](#2-建立)
-3. [其他](#3-其他)
+3. [下載](#3-下載)
+4. [Tips](#4-Tips)
 
 ## 1. 初始化
 
@@ -21,7 +25,6 @@ _建立自訂 tensorflow-dataset 提高訓練過程資料傳遞效率及解決�
 [DOWNLOAD](https://drive.google.com/file/d/1FxmlSW0A2QfYYfwMZer7aXOMBd_m6O7j/view?usp=sharing))
 ，透過下面指令的初始化，會自動生成資料夾及檔案。
 [可參考這裡](https://www.tensorflow.org/datasets/cli#tfds_new_implementing_a_new_dataset)
-
 
 ### Deep PCB 資料集 (VOC Like) >>>> [Download](https://drive.google.com/file/d/12MTL3seeA4ZqnVzw1oWwdmE5KGxyAcqC/view?usp=sharing)
 
@@ -47,19 +50,10 @@ tfds new dpcb_db
 
 ## 2. 建立
 
-本範例僅需修改 dpcb_db.py，在舊有形式上採用 PASCAL VOC 的編排方式進行訓練，老大提供原始碼我們就參考一下， [這裡](https://github.com/tensorflow/datasets/blob/master/tensorflow_datasets/object_detection/voc.py) 。
+本範例僅需修改 dpcb_db.py，在舊有形式上採用 PASCAL VOC 的格式進行訓練，可參考官網
+-> [這裡](https://github.com/tensorflow/datasets/blob/master/tensorflow_datasets/object_detection/voc.py) 。
 
-:point_right: 需要 import 的有 :
-
-```python
-import os
-import xml.etree.ElementTree
-import tensorflow as tf
-import tensorflow_datasets as tfds
-```
-
-:point_right: 所有標記檔案都為 .xml 形式，以下是解析關鍵字及抽取資料集輸出形式。
-注意，bbox 座標要求為 0~1，這裡直接將座標 x 與 y 分別除以 影像的寬與長。
+:point_right: 所有標記檔案都為 .xml 形式，以下是解析關鍵字及抽取資料集輸出形式。 注意，bbox 座標要求為 0~1，這裡直接將座標 x 與 y 分別除以 影像的寬與長。
 
 ```python
 def _get_example_objects(annon_filepath):
@@ -134,18 +128,20 @@ class DpcbDb(tfds.core.GeneratorBasedBuilder):
 
 ```python
     def _split_generators(self, dl_manager: tfds.download.DownloadManager):
-        """Returns SplitGenerators."""
 
-        paths = "D:\\"  # < -- 修改路徑
 
-        return [
-            tfds.core.SplitGenerator(
-                name=tfds.Split.TEST,
-                gen_kwargs=dict(data_path=paths, set_name="test")),
-            tfds.core.SplitGenerator(
-                name=tfds.Split.TRAIN,
-                gen_kwargs=dict(data_path=paths, set_name="trainval")),
-        ]
+"""Returns SplitGenerators."""
+
+paths = "D:\\"  # < -- 修改路徑
+
+return [
+    tfds.core.SplitGenerator(
+        name=tfds.Split.TEST,
+        gen_kwargs=dict(data_path=paths, set_name="test")),
+    tfds.core.SplitGenerator(
+        name=tfds.Split.TRAIN,
+        gen_kwargs=dict(data_path=paths, set_name="trainval")),
+]
 ```
 
 :point_right: 確認好資料集標註檔的解析及輸出後，就能開始建立。 --data_dir 為輸出路徑
@@ -194,7 +190,23 @@ tfds.core.DatasetInfo(
 )
 ```
 
-## 3. 其他
+## 3. 下載
+
+| Dataset              | Description         | Download          |
+|----------------------|---------------------|-------------------|
+| Deep PCB             | 二值化之印刷電路瑕疵資料集，共六種瑕疵 | [DPCB](https://drive.google.com/file/d/12MTL3seeA4ZqnVzw1oWwdmE5KGxyAcqC/view?usp=sharing)          |
+| Deep PCB (tfrecord)  | -                   | [DPCB_tfds](https://drive.google.com/file/d/15y3md6zUVFX6cmI_pXYeBF33JsYpje00/view?usp=sharing)     |
+| VOC(2007+2012)       | 彩色泛用大型資料集，共20種分類    | [VOC](http://host.robots.ox.ac.uk/pascal/VOC/voc2012/)           |
+| VOC(07+12, tfrecord) | -                   | [VOC_tfds](https://drive.google.com/file/d/1nF6OO2NZTPMwp-Sf1QTMcTdgHmPXX0b9/view?usp=sharing)      |
+| VOC_mini(tfrecord)   | -                   | [VOC_mini_tfds](https://drive.google.com/file/d/1wXBX0p50jlJKpuOL4Vwo3g9xcFg0nT1X/view?usp=sharing) |
+
+* original Deep PCB dataset -> [https://github.com/tangsanli5201/DeepPCB](https://github.com/tangsanli5201/DeepPCB)
+
+### Deep PCB Example
+![image](https://github.com/gogo12235LYH/build-tfds/blob/master/images/dpcb.png)
+
+### PASCAL VOC Example
+![image](https://github.com/gogo12235LYH/build-tfds/blob/master/images/voc.png)
 
 ### 如何讀取 ? tfds.load
 
@@ -204,4 +216,47 @@ tfds.core.DatasetInfo(
 import tensorflow_datasets as tfds
 
 train, test = tfds.load(name="dpcb_db", split=["trainval", "test"], data_dir="D:\\tensorflow_datasets")
+```
+
+## 4. Tips
+
+### tf.data: cache --> shuffle --> repeat --> batch --> prefetch
+
+#### 1. Cache: 如果記憶體空間夠塞下整個訓練資料，可加入此方法
+#### 2. Shuffle: 這裡會有一個 buffer size，也是取決記憶體大小設置(過小效果非常差，等同沒打亂)，會取每 shard 的前 buffer_size 個資料打亂
+#### 2.1 Shuffle: 如果資料過大，建議包成 tfrecord 時，先將資料打亂；大型資料會有多個 shards，讀取時 shuffle_files = Ture，使每個 epoch 讀取的 shards 順序不同
+#### 3. Repeat: 先重複再取 batch，確保每筆資料都能夠讀取到
+#### 4. Batch: 如其名，但若是使用在多目標檢測上，要注意資料維度是否有補滿，使得 tensor 的 shape 都是固定的 !
+
+```python
+def create_pipeline(phi=0, mode="ResNetV1", db="DPCB", batch_size=1, debug=False):
+    autotune = tf.data.AUTOTUNE
+    _buffer = 1000
+
+    if db == "DPCB":
+        (train, test), ds_info = tfds.load(name="dpcb_db", split=["train", "test"], data_dir="D:/datasets/",
+                                           with_info=True)
+    elif db == "VOC":
+        (train, test), ds_info = tfds.load(name="pascal_voc", split=["train", "test"], data_dir="D:/datasets/",
+                                           with_info=True,
+                                           shuffle_files=True)
+    elif db == "VOC_mini":
+        (train, test), ds_info = tfds.load(name="pascal_voc_mini", split=["train", "test"], data_dir="D:/datasets/",
+                                           with_info=True,
+                                           shuffle_files=True)
+    else:
+        train, test, ds_info = None, None, None
+
+    train_examples = ds_info.splits["train"].num_examples
+    test_examples = ds_info.splits["test"].num_examples
+    print(f"[INFO] {db}: train( {train_examples} ), test( {test_examples} )")
+
+    train = train.map(preprocess_data(phi=phi, mode=mode, debug=debug), num_parallel_calls=autotune)
+    train = train.shuffle(_buffer, reshuffle_each_iteration=True)
+    train = train.repeat()
+    train = train.padded_batch(batch_size=batch_size, padding_values=(0.0, 0.0), drop_remainder=True)
+    train = train.map(inputs_targets, num_parallel_calls=autotune)
+    train = train.prefetch(autotune)
+
+    return train, test
 ```
